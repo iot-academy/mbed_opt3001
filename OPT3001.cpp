@@ -30,6 +30,19 @@
 #include "mbed.h"
 #include "OPT3001.h"
 
+#define __ADDUNITS(x, y)         (x##y)
+
+#if MBED_MAJOR_VERSION == 2
+#define WAIT_MS(x)       wait_ms(x)
+#elif  MBED_MAJOR_VERSION == 5
+#define WAIT_MS(x)       Thread::wait(x)
+#elif  MBED_MAJOR_VERSION == 6
+#define WAIT_MS(x)       ThisThread::sleep_for(__ADDUNITS(x,ms))
+#else
+#error "Running on Unknown OS"
+#endif
+
+
 OPT3001::OPT3001(PinName sda, PinName scl, char slave_adr)
     :
     i2c_p(new I2C(sda, scl)), 
@@ -81,7 +94,7 @@ int OPT3001::readSensor()
     int i = 100;
     do {
         /* 10 ms delay */
-        wait_ms(10);
+        WAIT_MS(10);
 
         tmp[0] = OPT3001_REG_CONFIG;
         i2c.write(address, tmp, 1);
